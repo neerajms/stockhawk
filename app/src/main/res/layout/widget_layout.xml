@@ -36,8 +36,10 @@
                 android:layout_weight="0"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="8dp"
-                android:layout_marginRight="8dp"
+                android:paddingEnd="8dp"
+                android:paddingRight="8dp"
+                android:paddingStart="8dp"
+                android:paddingLeft="8dp"
                 android:background="@android:color/transparent"
                 android:layout_gravity="center_vertical|end|right"
                 android:src="@drawable/ic_attach_money_white_24dp" />
