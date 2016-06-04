@@ -25,9 +25,11 @@ public class WidgetDataProvider implements RemoteViewsService.RemoteViewsFactory
 
     @Override
     public void onCreate() {
-        SharedPreferences sharedPreferences =
-                mContext.getSharedPreferences("shared", Context.MODE_PRIVATE);
-        mIsPercentWidget = sharedPreferences.getBoolean("is_percentage", true);
+        SharedPreferences sharedPreferences = mContext.getSharedPreferences(
+                mContext.getResources().getString(R.string.app_shared_preference),
+                Context.MODE_PRIVATE);
+        mIsPercentWidget = sharedPreferences.getBoolean(
+                mContext.getResources().getString(R.string.key_is_percentage), true);
     }
 
     @Override
@@ -69,10 +71,13 @@ public class WidgetDataProvider implements RemoteViewsService.RemoteViewsFactory
             return null;
         }
 
-        RemoteViews views = new RemoteViews(mContext.getPackageName(), R.layout.list_item_quote_widget);
+        RemoteViews views = new RemoteViews(mContext.getPackageName(),
+                R.layout.list_item_quote_widget);
 
-        views.setTextViewText(R.id.stock_symbol, mCursor.getString(mCursor.getColumnIndex("symbol")));
-        views.setTextViewText(R.id.bid_price, mCursor.getString(mCursor.getColumnIndex("bid_price")));
+        views.setTextViewText(R.id.stock_symbol,
+                mCursor.getString(mCursor.getColumnIndex(QuoteColumns.SYMBOL)));
+        views.setTextViewText(R.id.bid_price,
+                mCursor.getString(mCursor.getColumnIndex(QuoteColumns.BIDPRICE)));
 
         if (mCursor.getInt(mCursor.getColumnIndex(QuoteColumns.ISUP)) == 1) {
             views.setInt(R.id.change,
@@ -93,7 +98,8 @@ public class WidgetDataProvider implements RemoteViewsService.RemoteViewsFactory
         }
 
         final Intent fillInIntent = new Intent();
-        fillInIntent.putExtra("stock_symbol", mCursor.getString(mCursor.getColumnIndex(QuoteColumns.SYMBOL)));
+        fillInIntent.putExtra(mContext.getResources().getString(R.string.key_stock_symbol),
+                mCursor.getString(mCursor.getColumnIndex(QuoteColumns.SYMBOL)));
         views.setOnClickFillInIntent(R.id.widget_list_item, fillInIntent);
 
         return views;

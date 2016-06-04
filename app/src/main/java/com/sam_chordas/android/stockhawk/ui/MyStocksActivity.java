@@ -80,10 +80,6 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
         mContext = this;
         ConnectivityManager cm =
                 (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
-
-//        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
-//        isConnected = activeNetwork != null &&
-//                activeNetwork.isConnectedOrConnecting();
         setContentView(R.layout.activity_my_stocks);
 
         // The intent service is for executing immediate pulls from the Yahoo API
@@ -107,18 +103,15 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
                 new RecyclerViewItemClickListener.OnItemClickListener() {
                     @Override
                     public void onItemClick(View v, int position) {
-                        //TODO:
-                        // do something on item click
                         Cursor c = mCursorAdapter.getCursor();
                         c.moveToPosition(position);
                         Intent intent = new Intent(getApplicationContext(), StockDetailsActivity.class);
-                        intent.putExtra("stock_symbol", c.getString(
-                                c.getColumnIndex(QuoteColumns.SYMBOL)));
+                        intent.putExtra(mContext.getResources().getString(R.string.key_stock_symbol),
+                                c.getString(c.getColumnIndex(QuoteColumns.SYMBOL)));
                         startActivity(intent);
                     }
                 }));
         recyclerView.setAdapter(mCursorAdapter);
-
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.attachToRecyclerView(recyclerView);
@@ -147,21 +140,17 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
                                         return;
                                     } else {
                                         // Add the stock to DB
-                                        mServiceIntent.putExtra("tag", "add");
-                                        mServiceIntent.putExtra("symbol", inputCaps);
+                                        mServiceIntent.putExtra(
+                                                mContext.getResources().getString(R.string.tag),
+                                                mContext.getResources().getString(R.string.add));
+                                        mServiceIntent.putExtra(mContext.getResources()
+                                                        .getString(R.string.key_stock_symbol),
+                                                inputCaps);
                                         startService(mServiceIntent);
-                                        //                                        Intent intent = new Intent(this, WidgetProvider.class);
-//                                        intent.setAction("android.appwidget.action.APPWIDGET_UPDATE");
-//                                        int ids[] = AppWidgetManager.getInstance(getApplication()).getAppWidgetIds(new ComponentName(getApplication(), DppWidget.class));
-//                                        intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS,ids);
-//                                        sendBroadcast(intent);
-//                                        WidgetProvider.updateWidget(mContext);
-
                                     }
                                 }
                             })
                             .show();
-
                 } else {
                     networkToast();
                 }
@@ -174,11 +163,6 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
         mItemTouchHelper.attachToRecyclerView(recyclerView);
 
         mTitle = getTitle();
-//        if (isConnected) {
-//            long period = 20L;
-//            long flex = 10L;
-//            String periodicTag = "periodic";
-//
 //            // create a periodic task to pull stocks once every hour after the app has been opened. This
 //            // is so Widget data stays up to date.
 //            PeriodicTask periodicTask = new PeriodicTask.Builder()
@@ -201,27 +185,16 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
         public void onReceive(Context context, Intent intent) {
             if (isInternetOn(context)) {
                 isConnected = true;
+                // The intent service is for executing immediate pulls from the Yahoo API
+                // GCMTaskService can only schedule tasks, they cannot execute immediately
                 mServiceIntent = new Intent(context, StockIntentService.class);
                 if (mSavedInstanceState == null) {
                     // Run the initialize task service so that some stocks appear upon an empty database
                     mServiceIntent.putExtra("tag", "init");
-//                    if (isConnected) {
                     startService(mServiceIntent);
-
-//                    } else {
-//                        networkToast();
-//                    }
                 }
-//                else {
-//                    mServiceIntent.putExtra("tag","periodic");
-//                    startService(mServiceIntent);
-//                }
-//                startService(mServiceIntent);
             } else {
                 networkToast();
-//                CoordinatorLayout coordinatorLayout = (CoordinatorLayout) context.getActivity().findViewById(R.id.coordinator_layout);
-//                Snackbar.make(coordinatorLayout, "No internet connection", Snackbar.LENGTH_INDEFINITE).show();
-
             }
         }
     }
@@ -241,12 +214,10 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        Log.v("Ondestroy", "destroyed");
         unregisterReceiver(mNetworkReceiver);
         if (mMessageReceiver != null) {
             LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
         }
-//        LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
     }
 
     @Override
@@ -286,9 +257,11 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
     @Override
     protected void onStop() {
         super.onStop();
-        SharedPreferences sharedPreferences = mContext.getSharedPreferences("shared",MODE_PRIVATE);
+        SharedPreferences sharedPreferences = mContext.getSharedPreferences(
+                mContext.getResources().getString(R.string.app_shared_preference), MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putBoolean("is_percentage", WidgetDataProvider.mIsPercentWidget);
+        editor.putBoolean(mContext.getResources().getString(R.string.key_is_percentage),
+                WidgetDataProvider.mIsPercentWidget);
         editor.commit();
     }
 

@@ -28,7 +28,7 @@
                 android:layout_gravity="left|center_vertical|start"
                 android:paddingLeft="8dp"
                 android:paddingStart="8dp"
-                android:text="@string/widget_title"
+                android:text="@string/app_name"
                 android:textSize="@dimen/md_title_textsize" />
 
             <ImageButton

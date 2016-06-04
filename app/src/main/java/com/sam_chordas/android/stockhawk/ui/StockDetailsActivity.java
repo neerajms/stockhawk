@@ -51,6 +51,7 @@ public class StockDetailsActivity extends AppCompatActivity {
     String mDateLabelStart;
     String mDateLabelEnd;
     Uri uri;
+    Context mContext;
 
     public StockDetailsActivity() {
 
@@ -81,7 +82,7 @@ public class StockDetailsActivity extends AppCompatActivity {
         Log.d("DAte:::::", currentDateAsString + "   " + startDate);
 
         Intent intent = getIntent();
-        mStockSymbol = intent.getExtras().get("stock_symbol").toString();
+        mStockSymbol = intent.getExtras().get(getResources().getString(R.string.key_stock_symbol)).toString();
         String query = "select * from yahoo.finance.historicaldata where symbol ='"
                 + mStockSymbol + "' and startDate = " + startDate + " and endDate = " + currentDateAsString;
 
@@ -132,7 +133,6 @@ public class StockDetailsActivity extends AppCompatActivity {
                     return null;
                 }
                 response = buffer.toString();
-                Log.d("RESPONSE:::::", response);
 
                 try {
                     JSONObject jsonObject = new JSONObject(response);
@@ -141,7 +141,6 @@ public class StockDetailsActivity extends AppCompatActivity {
                     JSONArray jsonArray = jsonObject2.getJSONArray("quote");
 
                     int index = 0;
-                    Log.v("Length Graph::",String.valueOf(jsonArray.length()));
                     for (int i = jsonArray.length()-1; i >= 0 ; i--) {
 //                        if (jsonArray.length() > 7 && i == 0) {
 //                            continue;
@@ -200,7 +199,8 @@ public class StockDetailsActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(String s) {
-            LineDataSet lineDataSet = new LineDataSet(entries, "test values");
+            LineDataSet lineDataSet = new LineDataSet(entries,
+                    "Stock Values");
             lineDataSet.setDrawCircles(true);
             lineDataSet.setDrawValues(true);
             lineDataSet.setValueTextColor(R.color.chart_font_white);
@@ -217,6 +217,7 @@ public class StockDetailsActivity extends AppCompatActivity {
     @Override
     public View onCreateView(String name, Context context, AttributeSet attrs) {
 
+        mContext = context;
         return super.onCreateView(name, context, attrs);
     }
 }

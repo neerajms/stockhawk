@@ -1,18 +1,27 @@
 <resources>
     <string name="app_name">Stock Hawk</string>
-
     <string name="action_example">Example action</string>
-
     <string name="action_settings">Settings</string>
     <string name="action_change_units">Change Units</string>
     <string name="symbol_search">Symbol Search</string>
     <string name="content_test">Search for a Stock Symbol</string>
-    <string name="input_hint">FB</string>
     <string name="input_prefill"></string>
     <string name="network_toast">Uh-oh! This app requires an internet connection</string>
     <string name="title_activity_stock_details">StockDetailsActivity</string>
+    <string name="stock_values">Stock Values</string>
+
+    <string name="input_hint" translatable="false">FB</string>
+    <string name="key_stock_symbol">stockSymbol</string>
     <string name="string_set_background_resource" translatable="false">setBackgroundResource</string>
-    <string name="widget_title">Stock Hawk</string>
-    <string name="intent_action_trigger_alarm">com.sam_chordas.android.stockhawk.widget.TRIGGER_ALARM</string>
-    <string name="intent_action_change_currency">com.sam_chordas.android.stockhawk.widget.CHANGE_CURRENCY</string>
+    <string name="intent_action_trigger_alarm" translatable="false">
+        com.sam_chordas.android.stockhawk.widget.TRIGGER_ALARM</string>
+    <string name="intent_action_change_currency" translatable="false">
+        com.sam_chordas.android.stockhawk.widget.CHANGE_CURRENCY</string>
+    <string name="wakelock_tag" translatable="false">partial_lock</string>
+    <string name="app_shared_preference" translatable="false">sharedPref</string>
+    <string name="key_is_percentage" translatable="false">isPercentage</string>
+    <string name="init" translatable="false">init</string>
+    <string name="periodic" translatable="false">periodic</string>
+    <string name="tag" translatable="false">tag</string>
+    <string name="add" translatable="false">add</string>
 </resources>

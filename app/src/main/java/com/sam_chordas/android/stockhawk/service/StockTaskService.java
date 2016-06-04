@@ -12,6 +12,7 @@ import android.util.Log;
 import com.google.android.gms.gcm.GcmNetworkManager;
 import com.google.android.gms.gcm.GcmTaskService;
 import com.google.android.gms.gcm.TaskParams;
+import com.sam_chordas.android.stockhawk.R;
 import com.sam_chordas.android.stockhawk.data.QuoteColumns;
 import com.sam_chordas.android.stockhawk.data.QuoteProvider;
 import com.sam_chordas.android.stockhawk.rest.Utils;
@@ -68,7 +69,8 @@ public class StockTaskService extends GcmTaskService {
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
-        if (params.getTag().equals("init") || params.getTag().equals("periodic")) {
+        if (params.getTag().equals(mContext.getResources().getString(R.string.init))
+                || params.getTag().equals(mContext.getResources().getString(R.string.periodic))) {
             isUpdate = true;
             initQueryCursor = mContext.getContentResolver().query(QuoteProvider.Quotes.CONTENT_URI,
                     new String[]{"Distinct " + QuoteColumns.SYMBOL}, null,
@@ -86,7 +88,7 @@ public class StockTaskService extends GcmTaskService {
                 initQueryCursor.moveToFirst();
                 for (int i = 0; i < initQueryCursor.getCount(); i++) {
                     mStoredSymbols.append("\"" +
-                            initQueryCursor.getString(initQueryCursor.getColumnIndex("symbol")) + "\",");
+                            initQueryCursor.getString(initQueryCursor.getColumnIndex(QuoteColumns.SYMBOL)) + "\",");
                     initQueryCursor.moveToNext();
                 }
                 mStoredSymbols.replace(mStoredSymbols.length() - 1, mStoredSymbols.length(), ")");
@@ -96,10 +98,11 @@ public class StockTaskService extends GcmTaskService {
                     e.printStackTrace();
                 }
             }
-        } else if (params.getTag().equals("add")) {
+        } else if (params.getTag().equals(mContext.getResources().getString(R.string.add))) {
             isUpdate = false;
             // get symbol from params.getExtra and build query
-            String stockInput = params.getExtras().getString("symbol");
+            String stockInput = params.getExtras().getString(
+                    mContext.getResources().getString(R.string.key_stock_symbol));
             try {
                 urlStringBuilder.append(URLEncoder.encode("\"" + stockInput + "\")", "UTF-8"));
             } catch (UnsupportedEncodingException e) {
@@ -130,12 +133,11 @@ public class StockTaskService extends GcmTaskService {
                     }
 
                     ArrayList<ContentProviderOperation> arrayList =
-                            Utils.quoteJsonToContentVals(getResponse,mContext);
+                            Utils.quoteJsonToContentVals(getResponse, mContext);
                     if (!arrayList.isEmpty()) {
                         mContext.getContentResolver().applyBatch(QuoteProvider.AUTHORITY, arrayList);
-                    }else {
+                    } else {
                         result = GcmNetworkManager.RESULT_FAILURE;
-                        Log.d("EMPTY:::::","empty array list"+result);
                     }
                 } catch (RemoteException | OperationApplicationException e) {
                     Log.e(LOG_TAG, "Error applying batch insert", e);
@@ -144,7 +146,6 @@ public class StockTaskService extends GcmTaskService {
                 e.printStackTrace();
             }
         }
-
         return result;
     }
 }
