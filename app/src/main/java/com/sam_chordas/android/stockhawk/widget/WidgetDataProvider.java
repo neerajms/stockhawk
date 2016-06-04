@@ -2,6 +2,7 @@ package com.sam_chordas.android.stockhawk.widget;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.Binder;
 import android.widget.AdapterView;
@@ -12,19 +13,21 @@ import com.sam_chordas.android.stockhawk.R;
 import com.sam_chordas.android.stockhawk.data.QuoteColumns;
 import com.sam_chordas.android.stockhawk.data.QuoteProvider;
 
-public class WidgetDataProvider implements RemoteViewsService.RemoteViewsFactory{
+public class WidgetDataProvider implements RemoteViewsService.RemoteViewsFactory {
 
     private Cursor mCursor;
     private Context mContext;
     public static boolean mIsPercentWidget = true;
 
-    WidgetDataProvider(Context context, Intent intent){
+    WidgetDataProvider(Context context, Intent intent) {
         mContext = context;
     }
 
     @Override
     public void onCreate() {
-        // Nothing to do
+        SharedPreferences sharedPreferences =
+                mContext.getSharedPreferences("shared", Context.MODE_PRIVATE);
+        mIsPercentWidget = sharedPreferences.getBoolean("is_percentage", true);
     }
 
     @Override
@@ -33,16 +36,10 @@ public class WidgetDataProvider implements RemoteViewsService.RemoteViewsFactory
             mCursor.close();
         }
 
-        // This method is called by the app hosting the widget (e.g., the launcher)
-        // However, our ContentProvider is not exported so it doesn't have access to the
-        // data. Therefore we need to clear (and finally restore) the calling identity so
-        // that calls use our process and permission
         final long identityToken = Binder.clearCallingIdentity();
-
-        // This is the same query from MyStocksActivity
         mCursor = mContext.getContentResolver().query(
                 QuoteProvider.Quotes.CONTENT_URI,
-                new String[] {
+                new String[]{
                         QuoteColumns._ID,
                         QuoteColumns.SYMBOL,
                         QuoteColumns.BIDPRICE,
@@ -72,12 +69,10 @@ public class WidgetDataProvider implements RemoteViewsService.RemoteViewsFactory
             return null;
         }
 
-        // Get the layout
         RemoteViews views = new RemoteViews(mContext.getPackageName(), R.layout.list_item_quote_widget);
 
-        // Bind data to the views
         views.setTextViewText(R.id.stock_symbol, mCursor.getString(mCursor.getColumnIndex("symbol")));
-        views.setTextViewText(R.id.bid_price,mCursor.getString(mCursor.getColumnIndex("bid_price")));
+        views.setTextViewText(R.id.bid_price, mCursor.getString(mCursor.getColumnIndex("bid_price")));
 
         if (mCursor.getInt(mCursor.getColumnIndex(QuoteColumns.ISUP)) == 1) {
             views.setInt(R.id.change,
@@ -106,7 +101,7 @@ public class WidgetDataProvider implements RemoteViewsService.RemoteViewsFactory
 
     @Override
     public RemoteViews getLoadingView() {
-        return null; // use the default loading view
+        return null;
     }
 
     @Override
@@ -116,16 +111,11 @@ public class WidgetDataProvider implements RemoteViewsService.RemoteViewsFactory
 
     @Override
     public long getItemId(int position) {
-        // Get the row ID for the view at the specified position
         if (mCursor != null && mCursor.moveToPosition(position)) {
             final int QUOTES_ID_COL = 0;
             return mCursor.getLong(QUOTES_ID_COL);
         }
         return position;
-    }
-
-    public void changeCurrency(){
-
     }
 
     @Override

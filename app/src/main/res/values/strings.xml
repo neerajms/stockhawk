@@ -13,4 +13,6 @@
     <string name="title_activity_stock_details">StockDetailsActivity</string>
     <string name="string_set_background_resource" translatable="false">setBackgroundResource</string>
     <string name="widget_title">Stock Hawk</string>
+    <string name="intent_action_trigger_alarm">com.sam_chordas.android.stockhawk.widget.TRIGGER_ALARM</string>
+    <string name="intent_action_change_currency">com.sam_chordas.android.stockhawk.widget.CHANGE_CURRENCY</string>
 </resources>

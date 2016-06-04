@@ -11,10 +11,7 @@ public class WidgetService extends RemoteViewsService {
     @Override
     public RemoteViewsFactory onGetViewFactory(Intent intent) {
         WidgetDataProvider widgetDataProvider = new WidgetDataProvider(
-                getApplicationContext(),intent);
+                getApplicationContext(), intent);
         return widgetDataProvider;
-    }
-    public void changeCurrency(){
-
     }
 }
