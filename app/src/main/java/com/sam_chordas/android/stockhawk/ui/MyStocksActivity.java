@@ -70,7 +70,7 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
         mProgress = new ProgressDialog(this);
         if (savedInstanceState == null) {
             mProgress.setCancelable(false);
-            mProgress.setMessage("Please wait while loading...");
+            mProgress.setMessage(this.getResources().getString(R.string.loading_message));
             mProgress.isIndeterminate();
             mProgress.show();
         }

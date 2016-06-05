@@ -9,6 +9,7 @@
     <string name="network_toast">Uh-oh! This app requires an internet connection</string>
     <string name="title_activity_stock_details">StockDetailsActivity</string>
     <string name="stock_values">Stock Values</string>
+    <string name="loading_message">Please wait while loading...</string>
 
     <string name="input_hint" translatable="false">FB</string>
     <string name="key_stock_symbol">stockSymbol</string>

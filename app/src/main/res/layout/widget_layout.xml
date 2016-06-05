@@ -29,6 +29,7 @@
                 android:paddingLeft="8dp"
                 android:paddingStart="8dp"
                 android:text="@string/app_name"
+                android:textColor="@color/font_white"
                 android:textSize="@dimen/md_title_textsize" />
 
             <ImageButton

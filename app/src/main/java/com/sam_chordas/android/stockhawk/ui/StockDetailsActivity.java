@@ -1,5 +1,6 @@
 package com.sam_chordas.android.stockhawk.ui;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -12,6 +13,8 @@ import android.util.Log;
 import android.view.View;
 
 import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
@@ -52,6 +55,7 @@ public class StockDetailsActivity extends AppCompatActivity {
     String mDateLabelEnd;
     Uri uri;
     Context mContext;
+    ProgressDialog mProgressDialog;
 
     public StockDetailsActivity() {
 
@@ -95,6 +99,7 @@ public class StockDetailsActivity extends AppCompatActivity {
                 .appendQueryParameter(call, call_val).build();
         Log.v("Url", uri.toString());
         AsyncTaskGraph asyncTaskGraph = new AsyncTaskGraph();
+
         asyncTaskGraph.execute(uri.toString());
 
 //        Toast.makeText(this, mStockSymbol, Toast.LENGTH_SHORT).show();
@@ -109,6 +114,7 @@ public class StockDetailsActivity extends AppCompatActivity {
 
         @Override
         protected String doInBackground(String... params) {
+
             HttpURLConnection urlConnection = null;
             BufferedReader reader = null;
             String response;
@@ -172,10 +178,12 @@ public class StockDetailsActivity extends AppCompatActivity {
 //                            dayInt = dayInt + 1;
 //                            continue;
 //                        }
-                        if (i == jsonArray.length() - 1){
-                            labels.add("Yesterday");
-                        }else {
-                            labels.add(String.valueOf(i + 1));
+                        if (i == 0){
+                            labels.add(mDateLabelStart);
+                        } else if (i == jsonArray.length() - 1){
+                            labels.add(mDateLabelEnd);
+                        } else {
+                            labels.add("");
                         }
 
 //                        SimpleDateFormat sdf = new SimpleDateFormat("dd-MM");
@@ -198,25 +206,58 @@ public class StockDetailsActivity extends AppCompatActivity {
         }
 
         @Override
+        protected void onProgressUpdate(String... values) {
+            super.onProgressUpdate(values);
+
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            mProgressDialog = new ProgressDialog(mContext);
+            mProgressDialog.setCancelable(false);
+            mProgressDialog.setMessage(mContext.getResources().getString(R.string.loading_message));
+            mProgressDialog.isIndeterminate();
+            mProgressDialog.show();
+        }
+
+        @Override
         protected void onPostExecute(String s) {
+            super.onPostExecute(s);
             LineDataSet lineDataSet = new LineDataSet(entries,
                     "Stock Values");
-            lineDataSet.setDrawCircles(true);
-            lineDataSet.setDrawValues(true);
-            lineDataSet.setValueTextColor(R.color.chart_font_white);
+            lineDataSet.setDrawCircles(false);
+            lineDataSet.setDrawCubic(true);
+            lineDataSet.setDrawFilled(true);
+            lineDataSet.setFillColor(getColor(R.color.material_blue_500));
+            lineDataSet.setColor(getColor(R.color.material_blue_500),220);
+            lineDataSet.setFillAlpha(220);
+            lineDataSet.setDrawValues(false);
+//            lineDataSet.setValueTextColor(getColor(R.color.font_white));
+
+            YAxis yAxisLeft = chart.getAxisLeft();
+            yAxisLeft.setTextColor(getColor(R.color.font_white));
+
+            YAxis yAxisRight = chart.getAxisRight();
+            yAxisRight.setTextColor(getColor(R.color.font_white));
+
+            XAxis xAxis = chart.getXAxis();
+            xAxis.setDrawGridLines(false);
+            xAxis.setAvoidFirstLastClipping(true);
+            xAxis.setSpaceBetweenLabels(0);
+            xAxis.setTextColor(getColor(R.color.font_white));
 
             LineData data = new LineData(labels, lineDataSet);
-            chart.setDescription("Stock Values");
+            chart.setDescription("Stock values chart for the last two months");
             chart.setData(data);
             chart.animateY(0);
+            mProgressDialog.dismiss();
 
-            super.onPostExecute(s);
         }
     }
 
     @Override
     public View onCreateView(String name, Context context, AttributeSet attrs) {
-
         mContext = context;
         return super.onCreateView(name, context, attrs);
     }
