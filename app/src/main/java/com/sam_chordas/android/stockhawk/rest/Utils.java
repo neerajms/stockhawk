@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
+import com.sam_chordas.android.stockhawk.R;
 import com.sam_chordas.android.stockhawk.data.QuoteColumns;
 import com.sam_chordas.android.stockhawk.data.QuoteProvider;
 
@@ -24,29 +25,37 @@ public class Utils {
 
     public static boolean showPercent = true;
 
+    private static Context mContext;
+
     public static ArrayList quoteJsonToContentVals(String JSON, Context context) {
+        mContext = context;
         ArrayList<ContentProviderOperation> batchOperations = new ArrayList<>();
         JSONObject jsonObject = null;
         JSONArray resultsArray = null;
         try {
             jsonObject = new JSONObject(JSON);
             if (jsonObject != null && jsonObject.length() != 0) {
-                jsonObject = jsonObject.getJSONObject("query");
-                int count = Integer.parseInt(jsonObject.getString("count"));
+                jsonObject = jsonObject.getJSONObject(
+                        context.getResources().getString(R.string.query));
+                int count = Integer.parseInt(jsonObject.getString(
+                        context.getResources().getString(R.string.count)));
                 if (count == 1) {
-                    jsonObject = jsonObject.getJSONObject("results")
-                            .getJSONObject("quote");
-                    Log.d("JSONOBJECT::::",jsonObject.getString("symbol"));
-                    if (!jsonObject.get("Bid").equals(null)) {
+                    jsonObject = jsonObject.getJSONObject(
+                            context.getResources().getString(R.string.results))
+                            .getJSONObject(context.getResources().getString(R.string.quote));
+                    Log.d("JSONOBJECT::::",
+                            jsonObject.getString(context.getResources().getString(R.string.symbol)));
+                    if (!jsonObject.get(context.getResources().getString(R.string.bid)).equals(null)) {
                         batchOperations.add(buildBatchOperation(jsonObject));
-                    }else {
-//                        batchOperations.clear();
-                        Intent intent = new Intent("invalid-stock-symbol");
+                    } else {
+                        Intent intent = new Intent(context.getResources()
+                                .getString(R.string.invalid_stock_intent_filter));
                         LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
-//                        return batchOperations;
                     }
                 } else {
-                    resultsArray = jsonObject.getJSONObject("results").getJSONArray("quote");
+                    resultsArray = jsonObject.getJSONObject(
+                            context.getResources().getString(R.string.results))
+                            .getJSONArray(context.getResources().getString(R.string.quote));
 
                     if (resultsArray != null && resultsArray.length() != 0) {
                         for (int i = 0; i < resultsArray.length(); i++) {
@@ -57,7 +66,7 @@ public class Utils {
                 }
             }
         } catch (JSONException e) {
-            Log.e(LOG_TAG, "String to JSON failed: " + e);
+            Log.e(LOG_TAG, mContext.getResources().getString(R.string.string_to_json_failed) + e);
         }
         return batchOperations;
     }
@@ -74,7 +83,6 @@ public class Utils {
             ampersand = change.substring(change.length() - 1, change.length());
             change = change.substring(0, change.length() - 1);
         }
-        Log.v("CHANGE:::",change);
         change = change.substring(1, change.length());
         double round = (double) Math.round(Double.parseDouble(change) * 100) / 100;
         change = String.format("%.2f", round);
@@ -89,11 +97,13 @@ public class Utils {
         ContentProviderOperation.Builder builder = ContentProviderOperation.newInsert(
                 QuoteProvider.Quotes.CONTENT_URI);
         try {
-            String change = jsonObject.getString("Change");
-            builder.withValue(QuoteColumns.SYMBOL, jsonObject.getString("symbol"));
-            builder.withValue(QuoteColumns.BIDPRICE, truncateBidPrice(jsonObject.getString("Bid")));
+            String change = jsonObject.getString(mContext.getResources().getString(R.string.change));
+            builder.withValue(QuoteColumns.SYMBOL, jsonObject.getString(
+                    mContext.getResources().getString(R.string.symbol)));
+            builder.withValue(QuoteColumns.BIDPRICE, truncateBidPrice(
+                    jsonObject.getString(mContext.getResources().getString(R.string.bid))));
             builder.withValue(QuoteColumns.PERCENT_CHANGE, truncateChange(
-                    jsonObject.getString("ChangeinPercent"), true));
+                    jsonObject.getString(mContext.getResources().getString(R.string.change_in_percent)), true));
             builder.withValue(QuoteColumns.CHANGE, truncateChange(change, false));
             builder.withValue(QuoteColumns.ISCURRENT, 1);
             if (change.charAt(0) == '-') {

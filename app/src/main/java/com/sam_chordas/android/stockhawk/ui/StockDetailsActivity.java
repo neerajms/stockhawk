@@ -153,6 +153,9 @@ public class StockDetailsActivity extends AppCompatActivity {
 //                        }
                         JSONObject jsonObject3 = jsonArray.getJSONObject(i);
                         entries.add(new Entry(Float.parseFloat(jsonObject3.getString("Adj_Close")), index));
+                        Log.v("Date::",jsonObject3.getString("Date"));
+                        String date = jsonObject3.getString("Date").substring(5);
+                        labels.add(date);
                         index = index + 1;
                     }
 //                    String day = mDateLabelStart.substring(0, 2);
@@ -172,19 +175,21 @@ public class StockDetailsActivity extends AppCompatActivity {
 //                    } catch (ParseException e) {
 
 //                    }
-                    String newDate = mDateLabelStart;
-                    for (int i = 0; i < jsonArray.length(); i++) {
-//                        if (jsonArray.length() > 7 && i == 0) {
-//                            dayInt = dayInt + 1;
-//                            continue;
+//                    String newDate = mDateLabelStart;
+//                    for (int i = 0; i < jsonArray.length(); i++) {
+////                        if (jsonArray.length() > 7 && i == 0) {
+////                            dayInt = dayInt + 1;
+////                            continue;
+////                        }
+//                        if (i == 0) {
+//                            labels.add(mDateLabelStart);
+//                        } else if (i == jsonArray.length() - 1) {
+//                            labels.add(mDateLabelEnd);
 //                        }
-                        if (i == 0){
-                            labels.add(mDateLabelStart);
-                        } else if (i == jsonArray.length() - 1){
-                            labels.add(mDateLabelEnd);
-                        } else {
-                            labels.add("");
-                        }
+//                    }
+//                        else {
+//                            labels.add("");
+//                        }
 
 //                        SimpleDateFormat sdf = new SimpleDateFormat("dd-MM");
 //                        Calendar c = Calendar.getInstance();
@@ -196,7 +201,7 @@ public class StockDetailsActivity extends AppCompatActivity {
 //                        }
 //                        c.add(Calendar.DATE, 1);  // number of days to add
 //                        newDate = sdf.format(c.getTime());
-                    }
+
 
                 } catch (JSONException e) {
                 }
@@ -246,6 +251,8 @@ public class StockDetailsActivity extends AppCompatActivity {
             xAxis.setAvoidFirstLastClipping(true);
             xAxis.setSpaceBetweenLabels(0);
             xAxis.setTextColor(getColor(R.color.font_white));
+            xAxis.setSpaceBetweenLabels(2);
+//            xAxis.setLabelsToSkip(0);
 
             LineData data = new LineData(labels, lineDataSet);
             chart.setDescription("Stock values chart for the last two months");

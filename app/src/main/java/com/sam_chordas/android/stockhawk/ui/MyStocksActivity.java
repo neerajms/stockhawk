@@ -20,7 +20,6 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.text.InputType;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -74,6 +73,7 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
             mProgress.isIndeterminate();
             mProgress.show();
         }
+
         mNetworkReceiver = new NetorkReceiver();
         registerReceiver(mNetworkReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
         mSavedInstanceState = savedInstanceState;
@@ -81,6 +81,12 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
         ConnectivityManager cm =
                 (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
         setContentView(R.layout.activity_my_stocks);
+
+        SharedPreferences sharedPreferences = getSharedPreferences(
+                getString(R.string.app_shared_preference),
+                Context.MODE_PRIVATE);
+        Utils.showPercent = sharedPreferences.getBoolean(
+                getString(R.string.key_is_percentage_app), true);
 
         // The intent service is for executing immediate pulls from the Yahoo API
         // GCMTaskService can only schedule tasks, they cannot execute immediately
@@ -128,12 +134,14 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
                                     // On FAB click, receive user input. Make sure the stock doesn't already exist
                                     // in the DB and proceed accordingly
                                     String inputCaps = input.toString().toUpperCase();
+                                    inputCaps = inputCaps.replaceAll("\\s", "");
                                     Cursor c = getContentResolver().query(QuoteProvider.Quotes.CONTENT_URI,
                                             new String[]{QuoteColumns.SYMBOL}, QuoteColumns.SYMBOL + "= ?",
                                             new String[]{inputCaps}, null);
                                     if (c.getCount() != 0) {
                                         Toast toast =
-                                                Toast.makeText(MyStocksActivity.this, "This stock is already saved!",
+                                                Toast.makeText(MyStocksActivity.this,
+                                                        getString(R.string.stock_already_saved),
                                                         Toast.LENGTH_LONG);
                                         toast.setGravity(Gravity.CENTER, Gravity.CENTER, 0);
                                         toast.show();
@@ -190,7 +198,7 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
                 mServiceIntent = new Intent(context, StockIntentService.class);
                 if (mSavedInstanceState == null) {
                     // Run the initialize task service so that some stocks appear upon an empty database
-                    mServiceIntent.putExtra("tag", "init");
+                    mServiceIntent.putExtra(getString(R.string.tag), getString(R.string.init));
                     startService(mServiceIntent);
                 }
             } else {
@@ -215,9 +223,6 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
     protected void onDestroy() {
         super.onDestroy();
         unregisterReceiver(mNetworkReceiver);
-        if (mMessageReceiver != null) {
-            LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
-        }
     }
 
     @Override
@@ -230,16 +235,15 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
     public void onResume() {
         super.onResume();
         LocalBroadcastManager.getInstance(this).registerReceiver(
-                mMessageReceiver, new IntentFilter("invalid-stock-symbol"));
+                mMessageReceiver, new IntentFilter(getString(R.string.invalid_stock_intent_filter)));
         getLoaderManager().restartLoader(CURSOR_LOADER_ID, null, this);
     }
 
     private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            // Get extra data included in the Intent
-            Log.v("Toast executed:", "not found");
-            Toast.makeText(getApplicationContext(), "Stock not found", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), getString(R.string.stock_not_found),
+                    Toast.LENGTH_SHORT).show();
         }
     };
 
@@ -257,11 +261,14 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
     @Override
     protected void onStop() {
         super.onStop();
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
         SharedPreferences sharedPreferences = mContext.getSharedPreferences(
                 mContext.getResources().getString(R.string.app_shared_preference), MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putBoolean(mContext.getResources().getString(R.string.key_is_percentage),
+        editor.putBoolean(mContext.getResources().getString(R.string.key_is_percentage_widget),
                 WidgetDataProvider.mIsPercentWidget);
+        editor.putBoolean(mContext.getResources().getString(R.string.key_is_percentage_app),
+                Utils.showPercent);
         editor.commit();
     }
 

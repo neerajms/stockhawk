@@ -10,6 +10,8 @@
     <string name="title_activity_stock_details">StockDetailsActivity</string>
     <string name="stock_values">Stock Values</string>
     <string name="loading_message">Please wait while loading...</string>
+    <string name="stock_already_saved">This stock is already saved!</string>
+    <string name="stock_not_found">Stock does not exist</string>
 
     <string name="input_hint" translatable="false">FB</string>
     <string name="key_stock_symbol">stockSymbol</string>
@@ -20,9 +22,20 @@
         com.sam_chordas.android.stockhawk.widget.CHANGE_CURRENCY</string>
     <string name="wakelock_tag" translatable="false">partial_lock</string>
     <string name="app_shared_preference" translatable="false">sharedPref</string>
-    <string name="key_is_percentage" translatable="false">isPercentage</string>
+    <string name="key_is_percentage_widget" translatable="false">isPercentage</string>
+    <string name="key_is_percentage_app" translatable="false">showPercentage</string>
     <string name="init" translatable="false">init</string>
     <string name="periodic" translatable="false">periodic</string>
     <string name="tag" translatable="false">tag</string>
     <string name="add" translatable="false">add</string>
+    <string name="invalid_stock_intent_filter" translatable="false">invalid-stock-symbol</string>
+    <string name="query" translatable="false">query</string>
+    <string name="count" translatable="false">count</string>
+    <string name="results" translatable="false">results</string>
+    <string name="symbol" translatable="false">symbol</string>
+    <string name="quote" translatable="false">quote</string>
+    <string name="bid" translatable="false">Bid</string>
+    <string name="change" translatable="false">Change</string>
+    <string name="change_in_percent" translatable="false">ChangeinPercent</string>
+    <string name="string_to_json_failed" translatable="false">String to JSON failed: </string>
 </resources>

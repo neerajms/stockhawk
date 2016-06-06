@@ -29,7 +29,7 @@ public class WidgetDataProvider implements RemoteViewsService.RemoteViewsFactory
                 mContext.getResources().getString(R.string.app_shared_preference),
                 Context.MODE_PRIVATE);
         mIsPercentWidget = sharedPreferences.getBoolean(
-                mContext.getResources().getString(R.string.key_is_percentage), true);
+                mContext.getResources().getString(R.string.key_is_percentage_widget), true);
     }
 
     @Override
