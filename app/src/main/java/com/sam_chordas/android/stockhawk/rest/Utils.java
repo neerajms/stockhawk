@@ -98,6 +98,7 @@ public class Utils {
                 QuoteProvider.Quotes.CONTENT_URI);
         try {
             String change = jsonObject.getString(mContext.getResources().getString(R.string.change));
+            Log.v("Change:::",change);
             builder.withValue(QuoteColumns.SYMBOL, jsonObject.getString(
                     mContext.getResources().getString(R.string.symbol)));
             builder.withValue(QuoteColumns.BIDPRICE, truncateBidPrice(

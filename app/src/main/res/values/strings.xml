@@ -12,6 +12,7 @@
     <string name="loading_message">Please wait while loading...</string>
     <string name="stock_already_saved">This stock is already saved!</string>
     <string name="stock_not_found">Stock does not exist</string>
+    <string name="chart_description">Stock values chart for the last two months</string>
 
     <string name="input_hint" translatable="false">FB</string>
     <string name="key_stock_symbol">stockSymbol</string>
@@ -38,4 +39,6 @@
     <string name="change" translatable="false">Change</string>
     <string name="change_in_percent" translatable="false">ChangeinPercent</string>
     <string name="string_to_json_failed" translatable="false">String to JSON failed: </string>
+    <string name="adj_close" translatable="false">Adj_close</string>
+    <string name="date" translatable="false">Date</string>
 </resources>

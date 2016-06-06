@@ -153,7 +153,7 @@ public class StockDetailsActivity extends AppCompatActivity {
 //                        }
                         JSONObject jsonObject3 = jsonArray.getJSONObject(i);
                         entries.add(new Entry(Float.parseFloat(jsonObject3.getString("Adj_Close")), index));
-                        Log.v("Date::",jsonObject3.getString("Date"));
+//                        Log.v("Date::",jsonObject3.getString("Date"));
                         String date = jsonObject3.getString("Date").substring(5);
                         labels.add(date);
                         index = index + 1;
@@ -269,3 +269,4 @@ public class StockDetailsActivity extends AppCompatActivity {
         return super.onCreateView(name, context, attrs);
     }
 }
+
