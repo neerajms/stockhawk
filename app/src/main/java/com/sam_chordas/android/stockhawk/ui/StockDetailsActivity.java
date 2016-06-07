@@ -257,6 +257,7 @@ public class StockDetailsActivity extends AppCompatActivity {
             LineData data = new LineData(labels, lineDataSet);
             chart.setDescription("Stock values chart for the last two months");
             chart.setData(data);
+//            chart.onRtlPropertiesChanged(View.LAYOUT_DIRECTION_RTL);
             chart.animateY(0);
             mProgressDialog.dismiss();
 

@@ -66,16 +66,19 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mProgress = new ProgressDialog(this);
-        if (savedInstanceState == null) {
+        isConnected = isInternetOn(this);
+
+        mNetworkReceiver = new NetorkReceiver();
+        registerReceiver(mNetworkReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
+        if (savedInstanceState == null && isConnected) {
+            mProgress = new ProgressDialog(this);
             mProgress.setCancelable(false);
             mProgress.setMessage(this.getResources().getString(R.string.loading_message));
             mProgress.isIndeterminate();
             mProgress.show();
         }
 
-        mNetworkReceiver = new NetorkReceiver();
-        registerReceiver(mNetworkReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
+
         mSavedInstanceState = savedInstanceState;
         mContext = this;
         ConnectivityManager cm =
@@ -109,12 +112,16 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
                 new RecyclerViewItemClickListener.OnItemClickListener() {
                     @Override
                     public void onItemClick(View v, int position) {
-                        Cursor c = mCursorAdapter.getCursor();
-                        c.moveToPosition(position);
-                        Intent intent = new Intent(getApplicationContext(), StockDetailsActivity.class);
-                        intent.putExtra(mContext.getResources().getString(R.string.key_stock_symbol),
-                                c.getString(c.getColumnIndex(QuoteColumns.SYMBOL)));
-                        startActivity(intent);
+                        if (isConnected) {
+                            Cursor c = mCursorAdapter.getCursor();
+                            c.moveToPosition(position);
+                            Intent intent = new Intent(getApplicationContext(), StockDetailsActivity.class);
+                            intent.putExtra(mContext.getResources().getString(R.string.key_stock_symbol),
+                                    c.getString(c.getColumnIndex(QuoteColumns.SYMBOL)));
+                            startActivity(intent);
+                        }else {
+                            networkToast();
+                        }
                     }
                 }));
         recyclerView.setAdapter(mCursorAdapter);
@@ -193,6 +200,9 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
         public void onReceive(Context context, Intent intent) {
             if (isInternetOn(context)) {
                 isConnected = true;
+                if (mProgress != null) {
+                    mProgress.show();
+                }
                 // The intent service is for executing immediate pulls from the Yahoo API
                 // GCMTaskService can only schedule tasks, they cannot execute immediately
                 mServiceIntent = new Intent(context, StockIntentService.class);
@@ -202,6 +212,7 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
                     startService(mServiceIntent);
                 }
             } else {
+                isConnected = false;
                 networkToast();
             }
         }
