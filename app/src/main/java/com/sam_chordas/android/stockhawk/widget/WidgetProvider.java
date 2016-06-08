@@ -6,6 +6,7 @@ import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.v4.app.TaskStackBuilder;
@@ -27,6 +28,7 @@ public class WidgetProvider extends AppWidgetProvider {
         PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, 0);
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         alarmManager.cancel(pendingIntent);
+
     }
 
     @Override
@@ -37,7 +39,18 @@ public class WidgetProvider extends AppWidgetProvider {
         intent.setAction(context.getResources().getString(R.string.intent_action_trigger_alarm));
         PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, 0);
         alarmManager.setRepeating(AlarmManager.RTC_WAKEUP,
-                System.currentTimeMillis() + 1000 * 3, 20000, pendingIntent);
+                System.currentTimeMillis() + 1000 * 3, 3600000, pendingIntent);
+    }
+
+    @Override
+    public void onDeleted(Context context, int[] appWidgetIds) {
+        super.onDeleted(context, appWidgetIds);
+        SharedPreferences sharedPreferences = context.getSharedPreferences(
+                context.getResources().getString(R.string.app_shared_preference), context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putBoolean(context.getResources().getString(R.string.key_is_percentage_widget),
+                WidgetDataProvider.mIsPercentWidget);
+        editor.commit();
     }
 
     @Override

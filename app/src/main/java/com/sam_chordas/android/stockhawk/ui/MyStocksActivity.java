@@ -27,6 +27,9 @@ import android.view.View;
 import android.widget.Toast;
 
 import com.afollestad.materialdialogs.MaterialDialog;
+import com.google.android.gms.gcm.GcmNetworkManager;
+import com.google.android.gms.gcm.PeriodicTask;
+import com.google.android.gms.gcm.Task;
 import com.melnykov.fab.FloatingActionButton;
 import com.sam_chordas.android.stockhawk.R;
 import com.sam_chordas.android.stockhawk.data.QuoteColumns;
@@ -35,6 +38,7 @@ import com.sam_chordas.android.stockhawk.rest.QuoteCursorAdapter;
 import com.sam_chordas.android.stockhawk.rest.RecyclerViewItemClickListener;
 import com.sam_chordas.android.stockhawk.rest.Utils;
 import com.sam_chordas.android.stockhawk.service.StockIntentService;
+import com.sam_chordas.android.stockhawk.service.StockTaskService;
 import com.sam_chordas.android.stockhawk.touch_helper.SimpleItemTouchHelperCallback;
 import com.sam_chordas.android.stockhawk.widget.WidgetDataProvider;
 
@@ -54,7 +58,7 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
     private QuoteCursorAdapter mCursorAdapter;
     private Context mContext;
     private Cursor mCursor;
-    boolean isConnected;
+    private boolean isConnected;
     private Bundle mSavedInstanceState;
     private NetorkReceiver mNetworkReceiver;
     public static ProgressDialog mProgress;
@@ -77,8 +81,7 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
             mProgress.isIndeterminate();
             mProgress.show();
         }
-
-
+        
         mSavedInstanceState = savedInstanceState;
         mContext = this;
         ConnectivityManager cm =
@@ -178,20 +181,24 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
         mItemTouchHelper.attachToRecyclerView(recyclerView);
 
         mTitle = getTitle();
-//            // create a periodic task to pull stocks once every hour after the app has been opened. This
-//            // is so Widget data stays up to date.
-//            PeriodicTask periodicTask = new PeriodicTask.Builder()
-//                    .setService(StockTaskService.class)
-//                    .setPeriod(period)
-//                    .setFlex(flex)
-//                    .setTag(periodicTag)
-//                    .setRequiredNetwork(Task.NETWORK_STATE_CONNECTED)
-//                    .setRequiresCharging(false)
-//                    .build();
-//            // Schedule task with tag "periodic." This ensure that only the stocks present in the DB
-//            // are updated.
-//            GcmNetworkManager.getInstance(this).schedule(periodicTask);
-//        }
+        if (isConnected) {
+            long period = 3600L;
+            long flex = 10L;
+            String periodicTag = "periodic";
+            // create a periodic task to pull stocks once every hour after the app has been opened. This
+            // is so Widget data stays up to date.
+            PeriodicTask periodicTask = new PeriodicTask.Builder()
+                    .setService(StockTaskService.class)
+                    .setPeriod(period)
+                    .setFlex(flex)
+                    .setTag(periodicTag)
+                    .setRequiredNetwork(Task.NETWORK_STATE_CONNECTED)
+                    .setRequiresCharging(false)
+                    .build();
+            // Schedule task with tag "periodic." This ensure that only the stocks present in the DB
+            // are updated.
+            GcmNetworkManager.getInstance(this).schedule(periodicTask);
+        }
     }
 
     public class NetorkReceiver extends BroadcastReceiver {

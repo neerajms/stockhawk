@@ -41,4 +41,8 @@
     <string name="string_to_json_failed" translatable="false">String to JSON failed: </string>
     <string name="adj_close" translatable="false">Adj_close</string>
     <string name="date" translatable="false">Date</string>
+    <string name="hour" translatable="false">hour</string>
+    <string name="half_hour" translatable="false">half_hour</string>
+    <string name="minute" translatable="false">minute</string>
+    <string name="key_refresh_cycle" translatable="false">refresh_cycle</string>
 </resources>
