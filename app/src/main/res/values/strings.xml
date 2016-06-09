@@ -45,4 +45,6 @@
     <string name="half_hour" translatable="false">half_hour</string>
     <string name="minute" translatable="false">minute</string>
     <string name="key_refresh_cycle" translatable="false">refresh_cycle</string>
+    <string name="entries" translatable="false">entries</string>
+    <string name="labels" translatable="false">labels</string>
 </resources>

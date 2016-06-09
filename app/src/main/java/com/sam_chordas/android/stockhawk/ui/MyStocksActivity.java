@@ -79,7 +79,6 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
             mProgress.setCancelable(false);
             mProgress.setMessage(this.getResources().getString(R.string.loading_message));
             mProgress.isIndeterminate();
-            mProgress.show();
         }
 
         mSavedInstanceState = savedInstanceState;
@@ -194,13 +193,13 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
         public void onReceive(Context context, Intent intent) {
             if (isInternetOn(context)) {
                 isConnected = true;
-                if (mProgress != null) {
-                    mProgress.show();
-                }
                 // The intent service is for executing immediate pulls from the Yahoo API
                 // GCMTaskService can only schedule tasks, they cannot execute immediately
                 mServiceIntent = new Intent(context, StockIntentService.class);
                 if (mSavedInstanceState == null) {
+                    if (mProgress != null) {
+                        mProgress.show();
+                    }
                     // Run the initialize task service so that some stocks appear upon an empty database
                     mServiceIntent.putExtra(getString(R.string.tag), getString(R.string.init));
                     startService(mServiceIntent);
@@ -211,7 +210,7 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
             }
         }
     }
-
+    
     public boolean isInternetOn(Context context) {
         ConnectivityManager connectivityManager =
                 (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);

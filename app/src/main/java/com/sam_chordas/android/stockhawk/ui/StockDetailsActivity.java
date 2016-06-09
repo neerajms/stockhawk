@@ -1,8 +1,12 @@
 package com.sam_chordas.android.stockhawk.ui;
 
 import android.app.ProgressDialog;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -11,6 +15,7 @@ import android.support.v7.widget.Toolbar;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
+import android.widget.Toast;
 
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.XAxis;
@@ -40,25 +45,29 @@ import java.util.Date;
 
 public class StockDetailsActivity extends AppCompatActivity {
 
-    String baseUrl = "https://query.yahooapis.com/v1/public/yql";
-    String search = "format";
-    String search_val = "json";
-    String query_key = "q";
-    String dia = "diagnostics";
-    String dia_val = "true";
-    String env = "env";
-    String env_val = "store://datatables.org/alltableswithkeys";
-    String call = "callback";
-    String call_val = "";
-    String mStockSymbol;
-    String mDateLabelStart;
-    String mDateLabelEnd;
-    Uri uri;
-    Context mContext;
-    ProgressDialog mProgressDialog;
+    private String baseUrl = "https://query.yahooapis.com/v1/public/yql";
+    private String search = "format";
+    private String search_val = "json";
+    private String query_key = "q";
+    private String dia = "diagnostics";
+    private String dia_val = "true";
+    private String env = "env";
+    private String env_val = "store://datatables.org/alltableswithkeys";
+    private String call = "callback";
+    private String call_val = "";
+    private String mStockSymbol;
+
+    private Uri uri;
+    private Context mContext;
+    private ProgressDialog mProgressDialog;
+    private ArrayList<String> mLabels;
+    private ArrayList<String> mEntriesString;
+    private ArrayList<Entry> mEntries;
+    private LineChart mChart;
+    private Bundle mSavedInstanceState;
+    private NetorkReceiver mNetworkReceiver;
 
     public StockDetailsActivity() {
-
     }
 
     @Override
@@ -68,25 +77,88 @@ public class StockDetailsActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        mNetworkReceiver = new NetorkReceiver();
+        registerReceiver(mNetworkReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
+
+        mSavedInstanceState = savedInstanceState;
+        mEntriesString = new ArrayList<String>();
+        mLabels = new ArrayList<String>();
+        mEntries = new ArrayList<>();
+        mChart = (LineChart) findViewById(R.id.chart);
+
+        if (savedInstanceState != null){
+            mStockSymbol = savedInstanceState.getString(getString(R.string.symbol));
+            //Set the stock symbol as the activity title
+            setTitle(mStockSymbol);
+            mLabels = savedInstanceState.getStringArrayList(getString(R.string.labels));
+            mEntriesString = savedInstanceState.getStringArrayList(getString(R.string.entries));
+            for (int index = 0; index < mEntriesString.size(); index++) {
+                mEntries.add(new Entry(Float.parseFloat(mEntriesString.get(index).toString()), index));
+            }
+            populateChart();
+        }else {
+            Intent intent = getIntent();
+            mStockSymbol = intent.getExtras().get(getResources().getString(R.string.key_stock_symbol)).toString();
+            //Set the stock symbol as the activity title
+            setTitle(mStockSymbol);
+        }
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+    }
+
+
+    public class NetorkReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (isInternetOn(context)) {
+                if (mSavedInstanceState == null) {
+                    fetchData();
+                }
+            } else {
+                networkToast();
+            }
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unregisterReceiver(mNetworkReceiver);
+    }
+
+    public void networkToast() {
+        Toast.makeText(mContext, getString(R.string.network_toast), Toast.LENGTH_SHORT).show();
+    }
+
+    public boolean isInternetOn(Context context) {
+        ConnectivityManager connectivityManager =
+                (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetwork = connectivityManager.getActiveNetworkInfo();
+        boolean isConnected = activeNetwork != null && activeNetwork.isConnectedOrConnecting();
+        if (!isConnected) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        outState.putStringArrayList(getString(R.string.entries), mEntriesString);
+        outState.putStringArrayList(getString(R.string.labels), mLabels);
+        outState.putString(getString(R.string.symbol), mStockSymbol);
+        super.onSaveInstanceState(outState);
+    }
+
+    public void fetchData() {
         Date currentDate = new Date();
         DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        DateFormat labelDateFormat = new SimpleDateFormat("dd-MM");
 
         String currentDateAsString = dateFormat.format(currentDate);
-        mDateLabelEnd = labelDateFormat.format(currentDate);
         currentDateAsString = "'" + currentDateAsString + "'";
 
         Calendar cal = Calendar.getInstance();
         cal.add(Calendar.DATE, -60);
         String startDate = dateFormat.format(cal.getTime());
-        mDateLabelStart = labelDateFormat.format(cal.getTime());
         startDate = "'" + startDate + "'";
-
-        Intent intent = getIntent();
-        mStockSymbol = intent.getExtras().get(getResources().getString(R.string.key_stock_symbol)).toString();
-
-        //Set the stock symbol as the activity title
-        setTitle(mStockSymbol);
 
         String query = "select * from yahoo.finance.historicaldata where symbol ='"
                 + mStockSymbol + "' and startDate = " + startDate + " and endDate = " + currentDateAsString;
@@ -100,15 +172,10 @@ public class StockDetailsActivity extends AppCompatActivity {
 
         AsyncTaskGraph asyncTaskGraph = new AsyncTaskGraph();
         asyncTaskGraph.execute(uri.toString());
-
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     }
 
     public class AsyncTaskGraph extends AsyncTask<String, String, String> {
         private String LOG_TAG = StockDetailsActivity.class.getSimpleName();
-        LineChart chart = (LineChart) findViewById(R.id.chart);
-        ArrayList<Entry> entries = new ArrayList<>();
-        ArrayList<String> labels = new ArrayList<String>();
 
         @Override
         protected String doInBackground(String... params) {
@@ -145,11 +212,14 @@ public class StockDetailsActivity extends AppCompatActivity {
                     JSONArray jsonArray = jsonObject2.getJSONArray(getString(R.string.quote));
 
                     int index = 0;
+                    String tempEntry;
                     for (int i = jsonArray.length() - 1; i >= 0; i--) {
                         JSONObject jsonObject3 = jsonArray.getJSONObject(i);
-                        entries.add(new Entry(Float.parseFloat(jsonObject3.getString(getString(R.string.adj_close))), index));
+                        tempEntry = jsonObject3.getString(getString(R.string.adj_close));
+                        mEntries.add(new Entry(Float.parseFloat(tempEntry), index));
+                        mEntriesString.add(tempEntry);
                         String date = jsonObject3.getString(getString(R.string.date)).substring(5);
-                        labels.add(date);
+                        mLabels.add(date);
                         index = index + 1;
                     }
                 } catch (JSONException e) {
@@ -180,36 +250,40 @@ public class StockDetailsActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
-            LineDataSet lineDataSet = new LineDataSet(entries,
-                    getString(R.string.stock_values));
-            lineDataSet.setDrawCircles(false);
-            lineDataSet.setDrawCubic(true);
-            lineDataSet.setDrawFilled(true);
-            lineDataSet.setFillColor(getColor(R.color.material_blue_500));
-            lineDataSet.setColor(getColor(R.color.material_blue_500), 220);
-            lineDataSet.setFillAlpha(220);
-            lineDataSet.setDrawValues(false);
-
-            YAxis yAxisLeft = chart.getAxisLeft();
-            yAxisLeft.setTextColor(getColor(R.color.font_white));
-
-            YAxis yAxisRight = chart.getAxisRight();
-            yAxisRight.setTextColor(getColor(R.color.font_white));
-
-            XAxis xAxis = chart.getXAxis();
-            xAxis.setDrawGridLines(false);
-            xAxis.setAvoidFirstLastClipping(true);
-            xAxis.setSpaceBetweenLabels(0);
-            xAxis.setTextColor(getColor(R.color.font_white));
-            xAxis.setSpaceBetweenLabels(2);
-
-            LineData data = new LineData(labels, lineDataSet);
-            chart.setDescription(getString(R.string.chart_description));
-            chart.setData(data);
-            chart.animateY(0);
+            populateChart();
             mProgressDialog.dismiss();
 
         }
+    }
+
+    public void populateChart() {
+        LineDataSet lineDataSet = new LineDataSet(mEntries,
+                getString(R.string.stock_values));
+        lineDataSet.setDrawCircles(false);
+        lineDataSet.setDrawCubic(true);
+        lineDataSet.setDrawFilled(true);
+        lineDataSet.setFillColor(getResources().getColor(R.color.material_blue_500));
+        lineDataSet.setColor(getResources().getColor(R.color.material_blue_500), 220);
+        lineDataSet.setFillAlpha(220);
+        lineDataSet.setDrawValues(false);
+
+        YAxis yAxisLeft = mChart.getAxisLeft();
+        yAxisLeft.setTextColor(getResources().getColor(R.color.font_white));
+
+        YAxis yAxisRight = mChart.getAxisRight();
+        yAxisRight.setTextColor(getResources().getColor(R.color.font_white));
+
+        XAxis xAxis = mChart.getXAxis();
+        xAxis.setDrawGridLines(false);
+        xAxis.setAvoidFirstLastClipping(true);
+        xAxis.setSpaceBetweenLabels(0);
+        xAxis.setTextColor(getResources().getColor(R.color.font_white));
+        xAxis.setSpaceBetweenLabels(2);
+
+        LineData data = new LineData(mLabels, lineDataSet);
+        mChart.setDescription(getString(R.string.chart_description));
+        mChart.setData(data);
+        mChart.animateY(0);
     }
 
     @Override
