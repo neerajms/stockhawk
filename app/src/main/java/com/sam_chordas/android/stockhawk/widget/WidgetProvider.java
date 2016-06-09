@@ -34,6 +34,7 @@ public class WidgetProvider extends AppWidgetProvider {
     @Override
     public void onEnabled(Context context) {
         super.onEnabled(context);
+        //For updating the widget every hour even if the app is not open
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         Intent intent = new Intent(context, WidgetBroadcastReceiver.class);
         intent.setAction(context.getResources().getString(R.string.intent_action_trigger_alarm));
@@ -45,6 +46,7 @@ public class WidgetProvider extends AppWidgetProvider {
     @Override
     public void onDeleted(Context context, int[] appWidgetIds) {
         super.onDeleted(context, appWidgetIds);
+        //For storing user preference on widget deletion which can be restored next time
         SharedPreferences sharedPreferences = context.getSharedPreferences(
                 context.getResources().getString(R.string.app_shared_preference), context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -67,6 +69,7 @@ public class WidgetProvider extends AppWidgetProvider {
             PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, 0);
             mView.setOnClickPendingIntent(R.id.widget_frame, pendingIntent);
 
+            //For switching between change in terms of value and percentage
             Intent changeCurrencyIntent = new Intent(context, WidgetBroadcastReceiver.class);
             changeCurrencyIntent.setAction(
                     context.getResources().getString(R.string.intent_action_change_currency));
@@ -74,6 +77,7 @@ public class WidgetProvider extends AppWidgetProvider {
                     PendingIntent.getBroadcast(context, 0, changeCurrencyIntent, 0);
             mView.setOnClickPendingIntent(R.id.change_widget, changeCurrencyPendingIntent);
 
+            //Opens the graph corresponding to the item selected
             Intent itemIntent = new Intent(context, StockDetailsActivity.class);
             PendingIntent clickPendingIntentTemplate = TaskStackBuilder.create(context)
                     .addNextIntentWithParentStack(itemIntent)

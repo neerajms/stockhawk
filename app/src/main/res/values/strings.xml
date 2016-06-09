@@ -9,13 +9,13 @@
     <string name="network_toast">Uh-oh! This app requires an internet connection</string>
     <string name="title_activity_stock_details">StockDetailsActivity</string>
     <string name="stock_values">Stock Values</string>
-    <string name="loading_message">Please wait while loading...</string>
+    <string name="loading_message">Please wait while loading&#8230;</string>
     <string name="stock_already_saved">This stock is already saved!</string>
     <string name="stock_not_found">Stock does not exist</string>
     <string name="chart_description">Stock values chart for the last two months</string>
 
     <string name="input_hint" translatable="false">FB</string>
-    <string name="key_stock_symbol">stockSymbol</string>
+    <string name="key_stock_symbol" translatable="false">stockSymbol</string>
     <string name="string_set_background_resource" translatable="false">setBackgroundResource</string>
     <string name="intent_action_trigger_alarm" translatable="false">
         com.sam_chordas.android.stockhawk.widget.TRIGGER_ALARM</string>
@@ -39,7 +39,7 @@
     <string name="change" translatable="false">Change</string>
     <string name="change_in_percent" translatable="false">ChangeinPercent</string>
     <string name="string_to_json_failed" translatable="false">String to JSON failed: </string>
-    <string name="adj_close" translatable="false">Adj_close</string>
+    <string name="adj_close" translatable="false">Adj_Close</string>
     <string name="date" translatable="false">Date</string>
     <string name="hour" translatable="false">hour</string>
     <string name="half_hour" translatable="false">half_hour</string>

@@ -43,8 +43,6 @@ public class Utils {
                     jsonObject = jsonObject.getJSONObject(
                             context.getResources().getString(R.string.results))
                             .getJSONObject(context.getResources().getString(R.string.quote));
-                    Log.d("JSONOBJECT::::",
-                            jsonObject.getString(context.getResources().getString(R.string.symbol)));
                     if (!jsonObject.get(context.getResources().getString(R.string.bid)).equals(null)) {
                         batchOperations.add(buildBatchOperation(jsonObject));
                     } else {
@@ -98,7 +96,6 @@ public class Utils {
                 QuoteProvider.Quotes.CONTENT_URI);
         try {
             String change = jsonObject.getString(mContext.getResources().getString(R.string.change));
-            Log.v("Change:::",change);
             builder.withValue(QuoteColumns.SYMBOL, jsonObject.getString(
                     mContext.getResources().getString(R.string.symbol)));
             builder.withValue(QuoteColumns.BIDPRICE, truncateBidPrice(

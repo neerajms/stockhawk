@@ -97,6 +97,7 @@ public class WidgetDataProvider implements RemoteViewsService.RemoteViewsFactory
                     mCursor.getString(mCursor.getColumnIndex(QuoteColumns.CHANGE)));
         }
 
+        //For opening the graph on clicking a stock on the widget
         final Intent fillInIntent = new Intent();
         fillInIntent.putExtra(mContext.getResources().getString(R.string.key_stock_symbol),
                 mCursor.getString(mCursor.getColumnIndex(QuoteColumns.SYMBOL)));

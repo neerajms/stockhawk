@@ -82,32 +82,30 @@ public class StockDetailsActivity extends AppCompatActivity {
         mDateLabelStart = labelDateFormat.format(cal.getTime());
         startDate = "'" + startDate + "'";
 
-        Log.v("start and end:", mDateLabelStart + " " + mDateLabelEnd);
-        Log.d("DAte:::::", currentDateAsString + "   " + startDate);
-
         Intent intent = getIntent();
         mStockSymbol = intent.getExtras().get(getResources().getString(R.string.key_stock_symbol)).toString();
+
+        //Set the stock symbol as the activity title
+        setTitle(mStockSymbol);
+
         String query = "select * from yahoo.finance.historicaldata where symbol ='"
                 + mStockSymbol + "' and startDate = " + startDate + " and endDate = " + currentDateAsString;
 
-        setTitle(mStockSymbol);
         uri = Uri.parse(baseUrl).buildUpon()
                 .appendQueryParameter(query_key, query)
                 .appendQueryParameter(search, search_val)
                 .appendQueryParameter(dia, dia_val)
                 .appendQueryParameter(env, env_val)
                 .appendQueryParameter(call, call_val).build();
-        Log.v("Url", uri.toString());
+
         AsyncTaskGraph asyncTaskGraph = new AsyncTaskGraph();
-
         asyncTaskGraph.execute(uri.toString());
-
-//        Toast.makeText(this, mStockSymbol, Toast.LENGTH_SHORT).show();
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     }
 
     public class AsyncTaskGraph extends AsyncTask<String, String, String> {
+        private String LOG_TAG = StockDetailsActivity.class.getSimpleName();
         LineChart chart = (LineChart) findViewById(R.id.chart);
         ArrayList<Entry> entries = new ArrayList<>();
         ArrayList<String> labels = new ArrayList<String>();
@@ -142,70 +140,23 @@ public class StockDetailsActivity extends AppCompatActivity {
 
                 try {
                     JSONObject jsonObject = new JSONObject(response);
-                    JSONObject jsonObject1 = jsonObject.getJSONObject("query");
-                    JSONObject jsonObject2 = jsonObject1.getJSONObject("results");
-                    JSONArray jsonArray = jsonObject2.getJSONArray("quote");
+                    JSONObject jsonObject1 = jsonObject.getJSONObject(getString(R.string.query));
+                    JSONObject jsonObject2 = jsonObject1.getJSONObject(getString(R.string.results));
+                    JSONArray jsonArray = jsonObject2.getJSONArray(getString(R.string.quote));
 
                     int index = 0;
-                    for (int i = jsonArray.length()-1; i >= 0 ; i--) {
-//                        if (jsonArray.length() > 7 && i == 0) {
-//                            continue;
-//                        }
+                    for (int i = jsonArray.length() - 1; i >= 0; i--) {
                         JSONObject jsonObject3 = jsonArray.getJSONObject(i);
-                        entries.add(new Entry(Float.parseFloat(jsonObject3.getString("Adj_Close")), index));
-//                        Log.v("Date::",jsonObject3.getString("Date"));
-                        String date = jsonObject3.getString("Date").substring(5);
+                        entries.add(new Entry(Float.parseFloat(jsonObject3.getString(getString(R.string.adj_close))), index));
+                        String date = jsonObject3.getString(getString(R.string.date)).substring(5);
                         labels.add(date);
                         index = index + 1;
                     }
-//                    String day = mDateLabelStart.substring(0, 2);
-//                    int dayInt = Integer.parseInt(day);
-//                    String monthStart = mDateLabelStart.substring(3, 5);
-//                    String monthEnd = mDateLabelEnd.substring(3, 5);
-//                    String month;
-//                    if (monthEnd.equals(monthStart)) {
-//                        month = monthStart;
-//                    } else {
-//                        month = monthEnd;
-//                    }
-//                    Date startDate = null;
-//                    SimpleDateFormat labelDateFormat = new SimpleDateFormat("dd-MM");
-//                    try {
-//                        startDate = labelDateFormat.parse(mDateLabelStart);
-//                    } catch (ParseException e) {
-
-//                    }
-//                    String newDate = mDateLabelStart;
-//                    for (int i = 0; i < jsonArray.length(); i++) {
-////                        if (jsonArray.length() > 7 && i == 0) {
-////                            dayInt = dayInt + 1;
-////                            continue;
-////                        }
-//                        if (i == 0) {
-//                            labels.add(mDateLabelStart);
-//                        } else if (i == jsonArray.length() - 1) {
-//                            labels.add(mDateLabelEnd);
-//                        }
-//                    }
-//                        else {
-//                            labels.add("");
-//                        }
-
-//                        SimpleDateFormat sdf = new SimpleDateFormat("dd-MM");
-//                        Calendar c = Calendar.getInstance();
-//                        try {
-//
-//                        c.setTime(sdf.parse(newDate));
-//                        }catch (ParseException e){
-//
-//                        }
-//                        c.add(Calendar.DATE, 1);  // number of days to add
-//                        newDate = sdf.format(c.getTime());
-
-
                 } catch (JSONException e) {
+                    Log.v(LOG_TAG, "Error in parsing JSON");
                 }
             } catch (IOException e) {
+                Log.v(LOG_TAG, "Error in HTTP connection");
             }
             return null;
         }
@@ -230,15 +181,14 @@ public class StockDetailsActivity extends AppCompatActivity {
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
             LineDataSet lineDataSet = new LineDataSet(entries,
-                    "Stock Values");
+                    getString(R.string.stock_values));
             lineDataSet.setDrawCircles(false);
             lineDataSet.setDrawCubic(true);
             lineDataSet.setDrawFilled(true);
             lineDataSet.setFillColor(getColor(R.color.material_blue_500));
-            lineDataSet.setColor(getColor(R.color.material_blue_500),220);
+            lineDataSet.setColor(getColor(R.color.material_blue_500), 220);
             lineDataSet.setFillAlpha(220);
             lineDataSet.setDrawValues(false);
-//            lineDataSet.setValueTextColor(getColor(R.color.font_white));
 
             YAxis yAxisLeft = chart.getAxisLeft();
             yAxisLeft.setTextColor(getColor(R.color.font_white));
@@ -252,12 +202,10 @@ public class StockDetailsActivity extends AppCompatActivity {
             xAxis.setSpaceBetweenLabels(0);
             xAxis.setTextColor(getColor(R.color.font_white));
             xAxis.setSpaceBetweenLabels(2);
-//            xAxis.setLabelsToSkip(0);
 
             LineData data = new LineData(labels, lineDataSet);
-            chart.setDescription("Stock values chart for the last two months");
+            chart.setDescription(getString(R.string.chart_description));
             chart.setData(data);
-//            chart.onRtlPropertiesChanged(View.LAYOUT_DIRECTION_RTL);
             chart.animateY(0);
             mProgressDialog.dismiss();
 

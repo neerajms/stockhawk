@@ -94,18 +94,6 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
         Utils.showPercent = sharedPreferences.getBoolean(
                 getString(R.string.key_is_percentage_app), true);
 
-        // The intent service is for executing immediate pulls from the Yahoo API
-        // GCMTaskService can only schedule tasks, they cannot execute immediately
-//        mServiceIntent = new Intent(this, StockIntentService.class);
-//        if (savedInstanceState == null) {
-//            // Run the initialize task service so that some stocks appear upon an empty database
-//            mServiceIntent.putExtra("tag", "init");
-//            if (isConnected) {
-//                startService(mServiceIntent);
-//            } else {
-//                networkToast();
-//            }
-//        }
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         getLoaderManager().initLoader(CURSOR_LOADER_ID, null, this);
@@ -122,7 +110,7 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
                             intent.putExtra(mContext.getResources().getString(R.string.key_stock_symbol),
                                     c.getString(c.getColumnIndex(QuoteColumns.SYMBOL)));
                             startActivity(intent);
-                        }else {
+                        } else {
                             networkToast();
                         }
                     }
@@ -184,7 +172,7 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
         if (isConnected) {
             long period = 3600L;
             long flex = 10L;
-            String periodicTag = "periodic";
+            String periodicTag = getString(R.string.periodic);
             // create a periodic task to pull stocks once every hour after the app has been opened. This
             // is so Widget data stays up to date.
             PeriodicTask periodicTask = new PeriodicTask.Builder()
@@ -202,7 +190,6 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
     }
 
     public class NetorkReceiver extends BroadcastReceiver {
-
         @Override
         public void onReceive(Context context, Intent intent) {
             if (isInternetOn(context)) {
@@ -241,12 +228,6 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
     protected void onDestroy() {
         super.onDestroy();
         unregisterReceiver(mNetworkReceiver);
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-
     }
 
     @Override
@@ -305,16 +286,15 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-//        if (id == R.id.action_settings) {
-//            return true;
-//        }
+        if (id == R.id.action_settings) {
+            return true;
+        }
 
         if (id == R.id.action_change_units) {
             // this is for changing stock changes from percent value to dollar value
             Utils.showPercent = !Utils.showPercent;
             this.getContentResolver().notifyChange(QuoteProvider.Quotes.CONTENT_URI, null);
         }
-
         return super.onOptionsItemSelected(item);
     }
 
