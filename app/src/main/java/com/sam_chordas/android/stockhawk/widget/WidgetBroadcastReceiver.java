@@ -33,6 +33,7 @@ public class WidgetBroadcastReceiver extends BroadcastReceiver {
             wakeLock.release();
         } else if (intent.getAction().equals(
                 context.getResources().getString(R.string.intent_action_change_currency))) {
+            //Changing stock changes from percentage value to dollar value
             WidgetDataProvider.mIsPercentWidget = !WidgetDataProvider.mIsPercentWidget;
             int widgetIDs[] = AppWidgetManager
                     .getInstance(context)

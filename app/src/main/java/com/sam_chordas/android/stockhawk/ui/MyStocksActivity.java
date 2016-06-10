@@ -1,5 +1,6 @@
 package com.sam_chordas.android.stockhawk.ui;
 
+import android.app.Dialog;
 import android.app.LoaderManager;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
@@ -13,6 +14,8 @@ import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
@@ -52,11 +55,11 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
      * Used to store the last screen title. For use in {@link #restoreActionBar()}.
      */
     private CharSequence mTitle;
-    private Intent mServiceIntent;
+    private static Intent mServiceIntent;
     private ItemTouchHelper mItemTouchHelper;
     private static final int CURSOR_LOADER_ID = 0;
     private QuoteCursorAdapter mCursorAdapter;
-    private Context mContext;
+    private static Context mContext;
     private Cursor mCursor;
     private boolean isConnected;
     private Bundle mSavedInstanceState;
@@ -122,40 +125,10 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
             @Override
             public void onClick(View v) {
                 if (isConnected) {
-                    new MaterialDialog.Builder(mContext).title(R.string.symbol_search)
-                            .content(R.string.content_test)
-                            .inputType(InputType.TYPE_CLASS_TEXT)
-                            .input(R.string.input_hint, R.string.input_prefill, new MaterialDialog.InputCallback() {
-                                @Override
-                                public void onInput(MaterialDialog dialog, CharSequence input) {
-                                    // On FAB click, receive user input. Make sure the stock doesn't already exist
-                                    // in the DB and proceed accordingly
-                                    String inputCaps = input.toString().toUpperCase();
-                                    inputCaps = inputCaps.replaceAll("\\s", "");
-                                    Cursor c = getContentResolver().query(QuoteProvider.Quotes.CONTENT_URI,
-                                            new String[]{QuoteColumns.SYMBOL}, QuoteColumns.SYMBOL + "= ?",
-                                            new String[]{inputCaps}, null);
-                                    if (c.getCount() != 0) {
-                                        Toast toast =
-                                                Toast.makeText(MyStocksActivity.this,
-                                                        getString(R.string.stock_already_saved),
-                                                        Toast.LENGTH_LONG);
-                                        toast.setGravity(Gravity.CENTER, Gravity.CENTER, 0);
-                                        toast.show();
-                                        return;
-                                    } else {
-                                        // Add the stock to DB
-                                        mServiceIntent.putExtra(
-                                                mContext.getResources().getString(R.string.tag),
-                                                mContext.getResources().getString(R.string.add));
-                                        mServiceIntent.putExtra(mContext.getResources()
-                                                        .getString(R.string.key_stock_symbol),
-                                                inputCaps);
-                                        startService(mServiceIntent);
-                                    }
-                                }
-                            })
-                            .show();
+                    //Showing dialog to input stock symbol
+                    //Use of dialog fragment helps in retaining dialog on rotation
+                    StockInputDialogFrgment dialogFrgment = new StockInputDialogFrgment();
+                    dialogFrgment.show(getSupportFragmentManager(),getString(R.string.tag_dialog_fragment));
                 } else {
                     networkToast();
                 }
@@ -188,6 +161,53 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
         }
     }
 
+    //Dialog fragment to retain stock input dialog on rotation
+    public static class StockInputDialogFrgment extends DialogFragment{
+
+        public StockInputDialogFrgment(){}
+
+        @NonNull
+        @Override
+        public Dialog onCreateDialog(Bundle savedInstanceState) {
+
+           return new MaterialDialog.Builder(mContext).title(R.string.symbol_search)
+                    .content(R.string.content_test)
+                    .inputType(InputType.TYPE_CLASS_TEXT)
+                    .autoDismiss(true)
+                    .input(R.string.input_hint, R.string.input_prefill, new MaterialDialog.InputCallback() {
+                        @Override
+                        public void onInput(MaterialDialog dialog, CharSequence input) {
+                            // On FAB click, receive user input. Make sure the stock doesn't already exist
+                            // in the DB and proceed accordingly
+                            String inputCaps = input.toString().toUpperCase();
+                            inputCaps = inputCaps.replaceAll("\\s", "");
+                            Cursor c = mContext.getContentResolver().query(QuoteProvider.Quotes.CONTENT_URI,
+                                    new String[]{QuoteColumns.SYMBOL}, QuoteColumns.SYMBOL + "= ?",
+                                    new String[]{inputCaps}, null);
+                            if (c.getCount() != 0) {
+                                Toast toast =
+                                        Toast.makeText(mContext,
+                                                getString(R.string.stock_already_saved),
+                                                Toast.LENGTH_LONG);
+                                toast.setGravity(Gravity.CENTER, Gravity.CENTER, 0);
+                                toast.show();
+                                return;
+                            } else {
+                                // Add the stock to DB
+                                mServiceIntent.putExtra(
+                                        mContext.getResources().getString(R.string.tag),
+                                        mContext.getResources().getString(R.string.add));
+                                mServiceIntent.putExtra(mContext.getResources()
+                                                .getString(R.string.key_stock_symbol),
+                                        inputCaps);
+                                mContext.startService(mServiceIntent);
+                            }
+                        }
+                    })
+                    .build();
+        }
+    }
+
     public class NetorkReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -210,7 +230,7 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
             }
         }
     }
-    
+
     public boolean isInternetOn(Context context) {
         ConnectivityManager connectivityManager =
                 (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);

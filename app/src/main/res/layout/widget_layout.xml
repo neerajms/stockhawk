@@ -23,28 +23,31 @@
             <TextView
                 android:id="@+id/widget_frame"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
+                android:layout_height="?android:attr/listPreferredItemHeightSmall"
                 android:layout_gravity="center_vertical|start"
-                android:paddingLeft="8dp"
-                android:paddingStart="8dp"
+                android:gravity="center_vertical"
+                android:layout_weight="1"
+                android:contentDescription="@string/open_stock_hawk"
                 android:paddingEnd="8dp"
+                android:paddingLeft="8dp"
                 android:paddingRight="8dp"
+                android:paddingStart="8dp"
                 android:text="@string/app_name"
                 android:textColor="@color/font_white"
                 android:textSize="@dimen/md_title_textsize" />
 
             <ImageButton
                 android:id="@+id/change_widget"
-                android:layout_weight="0"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="?android:attr/listPreferredItemHeightSmall"
+                android:layout_gravity="center_vertical|end"
+                android:layout_weight="0"
+                android:background="@android:color/transparent"
+                android:contentDescription="@string/action_change_units"
                 android:paddingEnd="8dp"
+                android:paddingLeft="8dp"
                 android:paddingRight="8dp"
                 android:paddingStart="8dp"
-                android:paddingLeft="8dp"
-                android:background="@android:color/transparent"
-                android:layout_gravity="center_vertical|end"
                 android:src="@drawable/ic_attach_money_white_24dp" />
         </LinearLayout>
     </FrameLayout>
