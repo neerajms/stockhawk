@@ -128,7 +128,7 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
                     //Showing dialog to input stock symbol
                     //Use of dialog fragment helps in retaining dialog on rotation
                     StockInputDialogFrgment dialogFrgment = new StockInputDialogFrgment();
-                    dialogFrgment.show(getSupportFragmentManager(),getString(R.string.tag_dialog_fragment));
+                    dialogFrgment.show(getSupportFragmentManager(), getString(R.string.tag_dialog_fragment));
                 } else {
                     networkToast();
                 }
@@ -162,15 +162,16 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
     }
 
     //Dialog fragment to retain stock input dialog on rotation
-    public static class StockInputDialogFrgment extends DialogFragment{
+    public static class StockInputDialogFrgment extends DialogFragment {
 
-        public StockInputDialogFrgment(){}
+        public StockInputDialogFrgment() {
+        }
 
         @NonNull
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
 
-           return new MaterialDialog.Builder(mContext).title(R.string.symbol_search)
+            return new MaterialDialog.Builder(mContext).title(R.string.symbol_search)
                     .content(R.string.content_test)
                     .inputType(InputType.TYPE_CLASS_TEXT)
                     .autoDismiss(true)

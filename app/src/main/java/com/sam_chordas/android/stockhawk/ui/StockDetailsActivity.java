@@ -86,7 +86,7 @@ public class StockDetailsActivity extends AppCompatActivity {
         mEntries = new ArrayList<>();
         mChart = (LineChart) findViewById(R.id.chart);
 
-        if (savedInstanceState != null){
+        if (savedInstanceState != null) {
             mStockSymbol = savedInstanceState.getString(getString(R.string.symbol));
             //Set the stock symbol as the activity title
             setTitle(mStockSymbol);
@@ -96,7 +96,7 @@ public class StockDetailsActivity extends AppCompatActivity {
                 mEntries.add(new Entry(Float.parseFloat(mEntriesString.get(index).toString()), index));
             }
             populateChart();
-        }else {
+        } else {
             Intent intent = getIntent();
             mStockSymbol = intent.getExtras().get(getResources().getString(R.string.key_stock_symbol)).toString();
             //Set the stock symbol as the activity title

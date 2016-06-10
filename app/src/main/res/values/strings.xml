@@ -14,8 +14,7 @@
     <string name="stock_not_found">Stock does not exist</string>
     <string name="chart_description">Stock values chart for the last two months</string>
     <string name="add_stock">Add a new stock</string>
-    <string name="open_stock_hawk">Open stock hawk</string>
-    <string name="open_graph">Double tap to open graph</string>
+    <string name="open_stock_hawk">Stock Hawk, Double tap to open stock hawk</string>
 
     <string name="input_hint" translatable="false">FB</string>
     <string name="key_stock_symbol" translatable="false">stockSymbol</string>
