@@ -44,20 +44,7 @@ import java.util.Date;
 //import com.example.sam_chordas.stockhawk.R;
 
 public class StockDetailsActivity extends AppCompatActivity {
-
-    private String baseUrl = "https://query.yahooapis.com/v1/public/yql";
-    private String search = "format";
-    private String search_val = "json";
-    private String query_key = "q";
-    private String dia = "diagnostics";
-    private String dia_val = "true";
-    private String env = "env";
-    private String env_val = "store://datatables.org/alltableswithkeys";
-    private String call = "callback";
-    private String call_val = "";
     private String mStockSymbol;
-
-    private Uri uri;
     private Context mContext;
     private ProgressDialog mProgressDialog;
     private ArrayList<String> mLabels;
@@ -76,9 +63,6 @@ public class StockDetailsActivity extends AppCompatActivity {
         setContentView(R.layout.activity_stock_details);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-        mNetworkReceiver = new NetorkReceiver();
-        registerReceiver(mNetworkReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
 
         mSavedInstanceState = savedInstanceState;
         mEntriesString = new ArrayList<String>();
@@ -105,7 +89,6 @@ public class StockDetailsActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     }
 
-
     public class NetorkReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -120,8 +103,15 @@ public class StockDetailsActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
+    protected void onResume() {
+        super.onResume();
+        mNetworkReceiver = new NetorkReceiver();
+        registerReceiver(mNetworkReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
         unregisterReceiver(mNetworkReceiver);
     }
 
@@ -149,6 +139,18 @@ public class StockDetailsActivity extends AppCompatActivity {
     }
 
     public void fetchData() {
+        String baseUrl = "https://query.yahooapis.com/v1/public/yql";
+        String search = "format";
+        String search_val = "json";
+        String query_key = "q";
+        String dia = "diagnostics";
+        String dia_val = "true";
+        String env = "env";
+        String env_val = "store://datatables.org/alltableswithkeys";
+        String call = "callback";
+        String call_val = "";
+        Uri uri;
+
         Date currentDate = new Date();
         DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
@@ -223,18 +225,12 @@ public class StockDetailsActivity extends AppCompatActivity {
                         index = index + 1;
                     }
                 } catch (JSONException e) {
-                    Log.v(LOG_TAG, "Error in parsing JSON");
+                    Log.v(LOG_TAG, "Error in parsing JSON" + e);
                 }
             } catch (IOException e) {
-                Log.v(LOG_TAG, "Error in HTTP connection");
+                Log.v(LOG_TAG, "Error in HTTP connection" + e);
             }
             return null;
-        }
-
-        @Override
-        protected void onProgressUpdate(String... values) {
-            super.onProgressUpdate(values);
-
         }
 
         @Override
@@ -252,7 +248,6 @@ public class StockDetailsActivity extends AppCompatActivity {
             super.onPostExecute(s);
             populateChart();
             mProgressDialog.dismiss();
-
         }
     }
 

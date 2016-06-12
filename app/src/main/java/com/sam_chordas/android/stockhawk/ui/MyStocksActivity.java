@@ -65,9 +65,9 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
     private Bundle mSavedInstanceState;
     private NetorkReceiver mNetworkReceiver;
     public static ProgressDialog mProgress;
+    private StockInputDialogFrgment mDialogFrgment;
 
     public MyStocksActivity() {
-
     }
 
     @Override
@@ -75,8 +75,6 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
         super.onCreate(savedInstanceState);
         isConnected = isInternetOn(this);
 
-        mNetworkReceiver = new NetorkReceiver();
-        registerReceiver(mNetworkReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
         if (savedInstanceState == null && isConnected) {
             mProgress = new ProgressDialog(this);
             mProgress.setCancelable(false);
@@ -111,6 +109,7 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
                             Intent intent = new Intent(getApplicationContext(), StockDetailsActivity.class);
                             intent.putExtra(mContext.getResources().getString(R.string.key_stock_symbol),
                                     c.getString(c.getColumnIndex(QuoteColumns.SYMBOL)));
+                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
                             startActivity(intent);
                         } else {
                             networkToast();
@@ -127,8 +126,8 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
                 if (isConnected) {
                     //Showing dialog to input stock symbol
                     //Use of dialog fragment helps in retaining dialog on rotation
-                    StockInputDialogFrgment dialogFrgment = new StockInputDialogFrgment();
-                    dialogFrgment.show(getSupportFragmentManager(), getString(R.string.tag_dialog_fragment));
+                    mDialogFrgment = new StockInputDialogFrgment();
+                    mDialogFrgment.show(getSupportFragmentManager(), getString(R.string.tag_dialog_fragment));
                 } else {
                     networkToast();
                 }
@@ -161,6 +160,85 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
         }
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        mNetworkReceiver = new NetorkReceiver();
+        registerReceiver(mNetworkReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
+        LocalBroadcastManager.getInstance(this).registerReceiver(
+                mMessageReceiver, new IntentFilter(getString(R.string.invalid_stock_intent_filter)));
+        getLoaderManager().restartLoader(CURSOR_LOADER_ID, null, this);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.my_stocks, menu);
+        restoreActionBar();
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+
+        //noinspection SimplifiableIfStatement
+        if (id == R.id.action_settings) {
+            return true;
+        }
+
+        if (id == R.id.action_change_units) {
+            // this is for changing stock changes from percent value to dollar value
+            Utils.showPercent = !Utils.showPercent;
+            this.getContentResolver().notifyChange(QuoteProvider.Quotes.CONTENT_URI, null);
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        unregisterReceiver(mNetworkReceiver);
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        SharedPreferences sharedPreferences = mContext.getSharedPreferences(
+                mContext.getResources().getString(R.string.app_shared_preference), MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putBoolean(mContext.getResources().getString(R.string.key_is_percentage_widget),
+                WidgetDataProvider.mIsPercentWidget);
+        editor.putBoolean(mContext.getResources().getString(R.string.key_is_percentage_app),
+                Utils.showPercent);
+        editor.commit();
+    }
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        // This narrows the return to only the stocks that are most current.
+        return new CursorLoader(this, QuoteProvider.Quotes.CONTENT_URI,
+                new String[]{QuoteColumns._ID, QuoteColumns.SYMBOL, QuoteColumns.BIDPRICE,
+                        QuoteColumns.PERCENT_CHANGE, QuoteColumns.CHANGE, QuoteColumns.ISUP},
+                QuoteColumns.ISCURRENT + " = ?",
+                new String[]{"1"},
+                null);
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        mCursorAdapter.swapCursor(data);
+        mCursor = data;
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+        mCursorAdapter.swapCursor(null);
+    }
+
     //Dialog fragment to retain stock input dialog on rotation
     public static class StockInputDialogFrgment extends DialogFragment {
 
@@ -170,7 +248,6 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
         @NonNull
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
-
             return new MaterialDialog.Builder(mContext).title(R.string.symbol_search)
                     .content(R.string.content_test)
                     .inputType(InputType.TYPE_CLASS_TEXT)
@@ -186,10 +263,9 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
                                     new String[]{QuoteColumns.SYMBOL}, QuoteColumns.SYMBOL + "= ?",
                                     new String[]{inputCaps}, null);
                             if (c.getCount() != 0) {
-                                Toast toast =
-                                        Toast.makeText(mContext,
-                                                getString(R.string.stock_already_saved),
-                                                Toast.LENGTH_LONG);
+                                Toast toast = Toast.makeText(mContext,
+                                        getString(R.string.stock_already_saved),
+                                        Toast.LENGTH_LONG);
                                 toast.setGravity(Gravity.CENTER, Gravity.CENTER, 0);
                                 toast.show();
                                 return;
@@ -244,20 +320,6 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
         return true;
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        unregisterReceiver(mNetworkReceiver);
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        LocalBroadcastManager.getInstance(this).registerReceiver(
-                mMessageReceiver, new IntentFilter(getString(R.string.invalid_stock_intent_filter)));
-        getLoaderManager().restartLoader(CURSOR_LOADER_ID, null, this);
-    }
-
     private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -276,68 +338,4 @@ public class MyStocksActivity extends AppCompatActivity implements LoaderManager
         actionBar.setDisplayShowTitleEnabled(true);
         actionBar.setTitle(mTitle);
     }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
-        SharedPreferences sharedPreferences = mContext.getSharedPreferences(
-                mContext.getResources().getString(R.string.app_shared_preference), MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putBoolean(mContext.getResources().getString(R.string.key_is_percentage_widget),
-                WidgetDataProvider.mIsPercentWidget);
-        editor.putBoolean(mContext.getResources().getString(R.string.key_is_percentage_app),
-                Utils.showPercent);
-        editor.commit();
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.my_stocks, menu);
-        restoreActionBar();
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        if (id == R.id.action_change_units) {
-            // this is for changing stock changes from percent value to dollar value
-            Utils.showPercent = !Utils.showPercent;
-            this.getContentResolver().notifyChange(QuoteProvider.Quotes.CONTENT_URI, null);
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        // This narrows the return to only the stocks that are most current.
-        return new CursorLoader(this, QuoteProvider.Quotes.CONTENT_URI,
-                new String[]{QuoteColumns._ID, QuoteColumns.SYMBOL, QuoteColumns.BIDPRICE,
-                        QuoteColumns.PERCENT_CHANGE, QuoteColumns.CHANGE, QuoteColumns.ISUP},
-                QuoteColumns.ISCURRENT + " = ?",
-                new String[]{"1"},
-                null);
-    }
-
-    @Override
-    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        mCursorAdapter.swapCursor(data);
-        mCursor = data;
-    }
-
-    @Override
-    public void onLoaderReset(Loader<Cursor> loader) {
-        mCursorAdapter.swapCursor(null);
-    }
-
 }

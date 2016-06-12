@@ -66,6 +66,7 @@ public class WidgetProvider extends AppWidgetProvider {
         for (int widgetId : appWidgetIds) {
             RemoteViews mView = initViews(context, appWidgetManager, widgetId);
             Intent intent = new Intent(context, MyStocksActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
             PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, 0);
             mView.setOnClickPendingIntent(R.id.widget_frame, pendingIntent);
 
@@ -79,6 +80,7 @@ public class WidgetProvider extends AppWidgetProvider {
 
             //Opens the graph corresponding to the item selected
             Intent itemIntent = new Intent(context, StockDetailsActivity.class);
+            itemIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
             PendingIntent clickPendingIntentTemplate = TaskStackBuilder.create(context)
                     .addNextIntentWithParentStack(itemIntent)
                     .getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
