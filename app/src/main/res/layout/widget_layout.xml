@@ -6,53 +6,45 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:background="@color/material_blue_500"
+        android:minHeight="?android:attr/listPreferredItemHeightSmall">
 
-    <!--<FrameLayout-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:layout_weight="0"-->
-        <!--&gt;-->
+        <TextView
+            android:id="@+id/widget_frame"
+            android:layout_width="wrap_content"
+            android:layout_height="?android:attr/listPreferredItemHeightSmall"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_gravity="center_vertical|start"
+            android:contentDescription="@string/open_stock_hawk"
+            android:gravity="center_vertical"
+            android:paddingEnd="8dp"
+            android:paddingLeft="8dp"
+            android:paddingRight="8dp"
+            android:paddingStart="8dp"
+            android:text="@string/app_name"
+            android:textColor="@color/font_white"
+            android:textSize="@dimen/md_title_textsize" />
 
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:minHeight="?android:attr/listPreferredItemHeightSmall"
-            android:background="@color/material_blue_500"
-            android:layout_gravity="center_vertical">
-
-            <TextView
-                android:id="@+id/widget_frame"
-                android:layout_width="wrap_content"
-                android:layout_height="?android:attr/listPreferredItemHeightSmall"
-                android:layout_alignParentLeft="true"
-                android:layout_alignParentStart="true"
-                android:layout_gravity="center_vertical|start"
-                android:contentDescription="@string/open_stock_hawk"
-                android:gravity="center_vertical"
-                android:paddingEnd="8dp"
-                android:paddingLeft="8dp"
-                android:paddingRight="8dp"
-                android:paddingStart="8dp"
-                android:text="@string/app_name"
-                android:textColor="@color/font_white"
-                android:textSize="@dimen/md_title_textsize" />
-
-            <ImageButton
-                android:id="@+id/change_widget"
-                android:layout_width="wrap_content"
-                android:layout_height="?android:attr/listPreferredItemHeightSmall"
-                android:layout_alignParentEnd="true"
-                android:layout_alignParentRight="true"
-                android:layout_gravity="center_vertical|end"
-                android:background="@android:color/transparent"
-                android:contentDescription="@string/action_change_units"
-                android:paddingEnd="8dp"
-                android:paddingLeft="8dp"
-                android:paddingRight="8dp"
-                android:paddingStart="8dp"
-                android:src="@drawable/ic_attach_money_white_24dp" />
-        </RelativeLayout>
-    <!--</FrameLayout>-->
+        <ImageButton
+            android:id="@+id/change_widget"
+            android:layout_width="wrap_content"
+            android:layout_height="?android:attr/listPreferredItemHeightSmall"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:layout_gravity="center_vertical|end"
+            android:background="@android:color/transparent"
+            android:contentDescription="@string/action_change_units"
+            android:paddingEnd="8dp"
+            android:paddingLeft="8dp"
+            android:paddingRight="8dp"
+            android:paddingStart="8dp"
+            android:src="@drawable/ic_attach_money_white_24dp" />
+    </RelativeLayout>
 
     <FrameLayout
         android:id="@+id/list_view_frame"
